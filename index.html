@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Student Performance Analyzer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .content {
+            display: flex;
+            min-height: 600px;
+        }
+
+        .sidebar {
+            width: 250px;
+            background: #f8f9fa;
+            border-right: 1px solid #dee2e6;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .menu-btn {
+            display: block;
+            width: 100%;
+            padding: 12px 15px;
+            margin-bottom: 10px;
+            border: none;
+            background: #667eea;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            text-align: left;
+        }
+
+        .menu-btn:hover {
+            background: #764ba2;
+            transform: translateX(5px);
+        }
+
+        .menu-btn.active {
+            background: #764ba2;
+            box-shadow: 0 0 10px rgba(118, 75, 162, 0.5);
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+        }
+
+        .panel {
+            display: none;
+        }
+
+        .panel.active {
+            display: block;
+        }
+
+        .panel h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .btn-container {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        button.btn {
+            padding: 12px 20px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        button.btn:hover {
+            background: #764ba2;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        button.btn-secondary {
+            background: #6c757d;
+        }
+
+        button.btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .output-section {
+            background: #000;
+            color: #0f0;
+            padding: 20px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            max-height: 500px;
+            overflow-y: auto;
+            margin-top: 20px;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .output-section:empty::before {
+            content: "Results will appear here...";
+            color: #666;
+        }
+
+        .info-box {
+            background: #e7f3ff;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            color: #004085;
+        }
+
+        .status-message {
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .status-message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            display: block;
+        }
+
+        .status-message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            .content {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                border-right: none;
+                border-bottom: 1px solid #dee2e6;
+            }
+
+            .menu-btn {
+                width: 100%;
+                margin-right: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 Smart Student Performance Analyzer</h1>
+            <p>Manage and analyze student academic performance efficiently</p>
+        </div>
+
+        <div class="content">
+            <div class="sidebar">
+                <button class="menu-btn active" onclick="switchPanel('add')">➕ Add Student</button>
+                <button class="menu-btn" onclick="switchPanel('search')">🔍 Search Student</button>
+                <button class="menu-btn" onclick="switchPanel('update')">✏️ Update Student</button>
+                <button class="menu-btn" onclick="switchPanel('toppers')">🏆 Display Toppers</button>
+                <button class="menu-btn" onclick="switchPanel('statistics')">📈 Class Statistics</button>
+                <button class="menu-btn" onclick="switchPanel('grades')">📊 Grade Distribution</button>
+                <button class="menu-btn" onclick="switchPanel('all')">📋 Display All Students</button>
+                <button class="menu-btn" onclick="switchPanel('subjects')">⚙️ Configure Subjects</button>
+                <button class="menu-btn" onclick="switchPanel('import')">📥 Import from CSV</button>
+            </div>
+
+            <div class="main-content">
+                <!-- Add Student -->
+                <div id="add" class="panel active">
+                    <h2>➕ Add Student</h2>
+                    <div class="info-box">Add a new student to the system with their marks</div>
+                    <div id="add-status" class="status-message"></div>
+                    <form id="addForm" onsubmit="handleAddStudent(event)">
+                        <div class="form-group">
+                            <label>Registration Number:</label>
+                            <input type="text" id="regNo" required placeholder="e.g., 25BCE1123">
+                        </div>
+                        <div class="form-group">
+                            <label>Student Name:</label>
+                            <input type="text" id="name" required placeholder="Enter student name">
+                        </div>
+                        <div id="marksFields"></div>
+                        <div class="btn-container">
+                            <button type="submit" class="btn">✅ Add Student</button>
+                            <button type="reset" class="btn btn-secondary">Clear</button>
+                        </div>
+                    </form>
+                    <div id="add-output" class="output-section"></div>
+                </div>
+
+                <!-- Search Student -->
+                <div id="search" class="panel">
+                    <h2>🔍 Search Student</h2>
+                    <div class="info-box">Search for a student by registration number</div>
+                    <div id="search-status" class="status-message"></div>
+                    <form onsubmit="handleSearchStudent(event)">
+                        <div class="form-group">
+                            <label>Registration Number:</label>
+                            <input type="text" id="searchRegNo" required placeholder="Enter registration number">
+                        </div>
+                        <div class="btn-container">
+                            <button type="submit" class="btn">🔍 Search</button>
+                        </div>
+                    </form>
+                    <div id="search-output" class="output-section"></div>
+                </div>
+
+                <!-- Update Student -->
+                <div id="update" class="panel">
+                    <h2>✏️ Update Student</h2>
+                    <div class="info-box">Update marks for an existing student</div>
+                    <div id="update-status" class="status-message"></div>
+                    <form id="updateForm" onsubmit="handleUpdateStudent(event)">
+                        <div class="form-group">
+                            <label>Registration Number:</label>
+                            <input type="text" id="updateRegNo" required placeholder="Enter registration number">
+                        </div>
+                        <div id="updateMarksFields"></div>
+                        <div class="btn-container">
+                            <button type="submit" class="btn">✏️ Update Student</button>
+                        </div>
+                    </form>
+                    <div id="update-output" class="output-section"></div>
+                </div>
+
+                <!-- Display Toppers -->
+                <div id="toppers" class="panel">
+                    <h2>🏆 Top Performers</h2>
+                    <div class="info-box">View the students with highest averages</div>
+                    <button class="btn" onclick="handleDisplayToppers()">🏆 Load Toppers</button>
+                    <div id="toppers-output" class="output-section"></div>
+                </div>
+
+                <!-- Class Statistics -->
+                <div id="statistics" class="panel">
+                    <h2>📈 Class Statistics</h2>
+                    <div class="info-box">View overall class performance statistics</div>
+                    <button class="btn" onclick="handleClassStatistics()">📊 Load Statistics</button>
+                    <div id="statistics-output" class="output-section"></div>
+                </div>
+
+                <!-- Grade Distribution -->
+                <div id="grades" class="panel">
+                    <h2>📊 Grade Distribution</h2>
+                    <div class="info-box">View the distribution of grades among students</div>
+                    <button class="btn" onclick="handleGradeDistribution()">📊 Load Distribution</button>
+                    <div id="grades-output" class="output-section"></div>
+                </div>
+
+                <!-- Display All Students -->
+                <div id="all" class="panel">
+                    <h2>📋 All Students</h2>
+                    <div class="info-box">View all students in the system</div>
+                    <button class="btn" onclick="handleDisplayAllStudents()">📋 Load All</button>
+                    <div id="all-output" class="output-section"></div>
+                </div>
+
+                <!-- Configure Subjects -->
+                <div id="subjects" class="panel">
+                    <h2>⚙️ Configure Subjects</h2>
+                    <div class="info-box">Set up the subjects for the current session</div>
+                    <form id="subjectsForm" onsubmit="handleConfigureSubjects(event)">
+                        <div class="form-group">
+                            <label>Number of Subjects:</label>
+                            <input type="number" id="numSubjects" min="1" max="10" value="3" required>
+                        </div>
+                        <div id="subjectNameFields"></div>
+                        <div class="btn-container">
+                            <button type="submit" class="btn">💾 Save Configuration</button>
+                        </div>
+                    </form>
+                    <div id="subjects-output" class="output-section"></div>
+                </div>
+
+                <!-- Import CSV -->
+                <div id="import" class="panel">
+                    <h2>📥 Import from CSV</h2>
+                    <div class="info-box">Import multiple students from CSV format</div>
+                    <form onsubmit="handleImportCSV(event)">
+                        <div class="form-group">
+                            <label>Paste CSV Data:</label>
+                            <textarea id="csvData" placeholder="Format: regNo,name,mark1,mark2,mark3&#10;Example:&#10;25BCE1123,John Doe,85,90,88&#10;25BCE1124,Jane Smith,92,88,91"></textarea>
+                        </div>
+                        <div class="btn-container">
+                            <button type="submit" class="btn">📥 Import Data</button>
+                            <button type="reset" class="btn btn-secondary">Clear</button>
+                        </div>
+                    </form>
+                    <div id="import-output" class="output-section"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class StudentDatabase {
+            constructor() {
+                this.storageKey = 'studentData';
+                this.subjectsKey = 'subjectData';
+                this.loadData();
+            }
+
+            loadData() {
+                const stored = localStorage.getItem(this.storageKey);
+                this.students = stored ? JSON.parse(stored) : [];
+                
+                const subjectsStored = localStorage.getItem(this.subjectsKey);
+                this.subjects = subjectsStored ? JSON.parse(subjectsStored) : ['Subject 1', 'Subject 2', 'Subject 3'];
+            }
+
+            saveData() {
+                localStorage.setItem(this.storageKey, JSON.stringify(this.students));
+            }
+
+            saveSubjects() {
+                localStorage.setItem(this.subjectsKey, JSON.stringify(this.subjects));
+            }
+
+            computeGrade(avg) {
+                if (avg >= 80) return 'A';
+                if (avg >= 60) return 'B';
+                if (avg >= 40) return 'C';
+                return 'F';
+            }
+
+            addStudent(regNo, name, marks) {
+                // Check for duplicates
+                if (this.students.some(s => s.regNo === regNo)) {
+                    return { success: false, message: 'Student with this registration number already exists!' };
+                }
+
+                const total = marks.reduce((sum, m) => sum + parseFloat(m), 0);
+                const average = total / marks.length;
+                const grade = this.computeGrade(average);
+
+                const student = {
+                    regNo,
+                    name,
+                    marks: marks.map(m => parseFloat(m)),
+                    total: parseFloat(total.toFixed(2)),
+                    average: parseFloat(average.toFixed(2)),
+                    grade
+                };
+
+                this.students.push(student);
+                this.saveData();
+                return { success: true, student };
+            }
+
+            searchStudent(regNo) {
+                return this.students.find(s => s.regNo === regNo);
+            }
+
+            updateStudent(regNo, marks) {
+                const student = this.searchStudent(regNo);
+                if (!student) {
+                    return { success: false, message: 'Student not found!' };
+                }
+
+                const total = marks.reduce((sum, m) => sum + parseFloat(m), 0);
+                const average = total / marks.length;
+                
+                student.marks = marks.map(m => parseFloat(m));
+                student.total = parseFloat(total.toFixed(2));
+                student.average = parseFloat(average.toFixed(2));
+                student.grade = this.computeGrade(average);
+
+                this.saveData();
+                return { success: true, student };
+            }
+
+            getToppers(limit = 5) {
+                return [...this.students].sort((a, b) => b.average - a.average).slice(0, limit);
+            }
+
+            getStatistics() {
+                if (this.students.length === 0) {
+                    return null;
+                }
+
+                const totals = this.students.map(s => s.total);
+                const averages = this.students.map(s => s.average);
+                
+                return {
+                    totalStudents: this.students.length,
+                    classAverage: (averages.reduce((a, b) => a + b, 0) / averages.length).toFixed(2),
+                    highestScore: Math.max(...totals).toFixed(2),
+                    lowestScore: Math.min(...totals).toFixed(2),
+                    medianScore: averages.sort((a, b) => a - b)[Math.floor(averages.length / 2)].toFixed(2)
+                };
+            }
+
+            getGradeDistribution() {
+                const dist = { A: 0, B: 0, C: 0, F: 0 };
+                this.students.forEach(s => dist[s.grade]++);
+                return dist;
+            }
+        }
+
+        let db = new StudentDatabase();
+
+        function switchPanel(panelName) {
+            const panels = document.querySelectorAll('.panel');
+            panels.forEach(p => p.classList.remove('active'));
+
+            const buttons = document.querySelectorAll('.menu-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+
+            const selectedPanel = document.getElementById(panelName);
+            if (selectedPanel) {
+                selectedPanel.classList.add('active');
+            }
+
+            if (event.target.classList.contains('menu-btn')) {
+                event.target.classList.add('active');
+            }
+        }
+
+        function updateMarksFields() {
+            const addContainer = document.getElementById('marksFields');
+            const updateContainer = document.getElementById('updateMarksFields');
+            const subjectContainer = document.getElementById('subjectNameFields');
+
+            let marksHtml = '';
+            let subjectHtml = '';
+
+            for (let i = 0; i < db.subjects.length; i++) {
+                marksHtml += `
+                    <div class="form-group">
+                        <label>${db.subjects[i]} Marks (0-100):</label>
+                        <input type="number" min="0" max="100" step="0.5" class="marks-input" placeholder="0-100" required>
+                    </div>
+                `;
+
+                subjectHtml += `
+                    <div class="form-group">
+                        <label>Subject ${i + 1} Name:</label>
+                        <input type="text" class="subject-name-input" placeholder="Enter subject name" value="${db.subjects[i]}">
+                    </div>
+                `;
+            }
+
+            if (addContainer) addContainer.innerHTML = marksHtml;
+            if (updateContainer) updateContainer.innerHTML = marksHtml;
+            if (subjectContainer) subjectContainer.innerHTML = subjectHtml;
+        }
+
+        function handleAddStudent(e) {
+            e.preventDefault();
+            const regNo = document.getElementById('regNo').value;
+            const name = document.getElementById('name').value;
+            const markInputs = document.querySelectorAll('#addForm .marks-input');
+            const marks = Array.from(markInputs).map(input => input.value);
+
+            const output = document.getElementById('add-output');
+            const status = document.getElementById('add-status');
+
+            const result = db.addStudent(regNo, name, marks);
+
+            if (result.success) {
+                const s = result.student;
+                output.innerHTML = `>>> Add New Student <<<\n\n✅ Student added successfully!\n\nRegistration No: ${s.regNo}\nName: ${s.name}\nMarks:\n${s.marks.map((m, i) => `  ${db.subjects[i]}: ${m}`).join('\n')}\nTotal: ${s.total}\nAverage: ${s.average}\nGrade: ${s.grade}`;
+                status.className = 'status-message success';
+                status.innerHTML = '✅ Student added successfully!';
+                document.getElementById('addForm').reset();
+            } else {
+                output.innerHTML = `❌ Error: ${result.message}`;
+                status.className = 'status-message error';
+                status.innerHTML = `❌ ${result.message}`;
+            }
+        }
+
+        function handleSearchStudent(e) {
+            e.preventDefault();
+            const regNo = document.getElementById('searchRegNo').value;
+            const output = document.getElementById('search-output');
+            const status = document.getElementById('search-status');
+
+            const student = db.searchStudent(regNo);
+
+            if (student) {
+                output.innerHTML = `>>> Search Student <<<\n\nFound: ${student.regNo} | ${student.name}\nMarks:\n${student.marks.map((m, i) => `  ${db.subjects[i]}: ${m}`).join('\n')}\nTotal: ${student.total} | Avg: ${student.average} | Grade: ${student.grade}`;
+                status.className = 'status-message success';
+                status.innerHTML = '✅ Student found!';
+            } else {
+                output.innerHTML = `>>> Search Student <<<\n\n❌ Registration number ${regNo} not found.`;
+                status.className = 'status-message error';
+                status.innerHTML = '❌ Student not found';
+            }
+        }
+
+        function handleUpdateStudent(e) {
+            e.preventDefault();
+            const regNo = document.getElementById('updateRegNo').value;
+            const markInputs = document.querySelectorAll('#updateForm .marks-input');
+            const marks = Array.from(markInputs).map(input => input.value);
+
+            const output = document.getElementById('update-output');
+            const status = document.getElementById('update-status');
+
+            const result = db.updateStudent(regNo, marks);
+
+            if (result.success) {
+                const s = result.student;
+                output.innerHTML = `>>> Update Student <<<\n\n✅ Student record updated successfully!\n\nRegistration No: ${s.regNo}\nName: ${s.name}\nNew Marks:\n${s.marks.map((m, i) => `  ${db.subjects[i]}: ${m}`).join('\n')}\nTotal: ${s.total}\nAverage: ${s.average}\nGrade: ${s.grade}`;
+                status.className = 'status-message success';
+                status.innerHTML = '✅ Student updated successfully!';
+            } else {
+                output.innerHTML = `❌ Error: ${result.message}`;
+                status.className = 'status-message error';
+                status.innerHTML = `❌ ${result.message}`;
+            }
+        }
+
+        function handleDisplayToppers() {
+            const output = document.getElementById('toppers-output');
+
+            if (db.students.length === 0) {
+                output.innerHTML = `>>> Display Toppers <<<\n\nNo records found.`;
+                return;
+            }
+
+            const toppers = db.getToppers();
+            let result = `>>> Display Toppers <<<\n\n`;
+            toppers.forEach((s, idx) => {
+                result += `${idx + 1}. RegNo: ${s.regNo}, Name: ${s.name}, Total: ${s.total}, Avg: ${s.average}, Grade: ${s.grade}\n`;
+            });
+
+            output.innerHTML = result;
+        }
+
+        function handleClassStatistics() {
+            const output = document.getElementById('statistics-output');
+
+            if (db.students.length === 0) {
+                output.innerHTML = `>>> Class Statistics <<<\n\nNo students present.`;
+                return;
+            }
+
+            const stats = db.getStatistics();
+            let result = `>>> Class Statistics <<<\n\n`;
+            result += `Total Students: ${stats.totalStudents}\n`;
+            result += `Class Average Total: ${stats.classAverage}\n`;
+            result += `Highest Total: ${stats.highestScore}\n`;
+            result += `Lowest Total: ${stats.lowestScore}\n`;
+            result += `Median Score: ${stats.medianScore}\n`;
+
+            output.innerHTML = result;
+        }
+
+        function handleGradeDistribution() {
+            const output = document.getElementById('grades-output');
+
+            if (db.students.length === 0) {
+                output.innerHTML = `>>> Grade Distribution <<<\n\nNo students present.`;
+                return;
+            }
+
+            const dist = db.getGradeDistribution();
+            let result = `>>> Grade Distribution <<<\n\n`;
+            result += `A: ${dist.A}, B: ${dist.B}, C: ${dist.C}, Fail: ${dist.F}\n`;
+
+            output.innerHTML = result;
+        }
+
+        function handleDisplayAllStudents() {
+            const output = document.getElementById('all-output');
+
+            if (db.students.length === 0) {
+                output.innerHTML = `>>> All Student Records <<<\n\nNo students present.`;
+                return;
+            }
+
+            let result = `>>> All Student Records <<<\n\n`;
+            db.students.forEach(s => {
+                result += `RegNo: ${s.regNo} | Name: ${s.name}\n`;
+                s.marks.forEach((m, i) => {
+                    result += `  ${db.subjects[i]}: ${m}\n`;
+                });
+                result += `  Total: ${s.total} | Avg: ${s.average} | Grade: ${s.grade}\n\n`;
+            });
+
+            output.innerHTML = result;
+        }
+
+        function handleConfigureSubjects(e) {
+            e.preventDefault();
+            const num = parseInt(document.getElementById('numSubjects').value);
+            const output = document.getElementById('subjects-output');
+
+            if (num < 1 || num > 10) {
+                output.innerHTML = '❌ Error: Number of subjects must be between 1 and 10';
+                return;
+            }
+
+            const nameInputs = document.querySelectorAll('.subject-name-input');
+            const subjectNames = Array.from(nameInputs).map(input => input.value.trim()).filter(n => n);
+
+            if (subjectNames.length !== num) {
+                output.innerHTML = '❌ Error: All subject names must be filled';
+                return;
+            }
+
+            db.subjects = subjectNames;
+            db.saveSubjects();
+            updateMarksFields();
+
+            let result = `>>> Configure Subjects <<<\n\n✅ Configured ${num} subjects:\n`;
+            subjectNames.forEach((s, i) => {
+                result += `${i + 1}. ${s}\n`;
+            });
+
+            output.innerHTML = result;
+        }
+
+        function handleImportCSV(e) {
+            e.preventDefault();
+            const csvData = document.getElementById('csvData').value;
+            const output = document.getElementById('import-output');
+
+            const lines = csvData.trim().split('\n').filter(line => line.trim());
+            let imported = 0;
+            let errors = 0;
+
+            let result = `>>> Import Students from CSV <<<\n\n`;
+
+            for (let line of lines) {
+                const fields = line.split(',').map(f => f.trim());
+                if (fields.length < 2 + db.subjects.length) {
+                    errors++;
+                    continue;
+                }
+
+                const regNo = fields[0];
+                const name = fields[1];
+                const marks = fields.slice(2, 2 + db.subjects.length);
+
+                const res = db.addStudent(regNo, name, marks);
+                if (res.success) {
+                    imported++;
+                    result += `✅ Added: ${regNo} | ${name}\n`;
+                } else {
+                    errors++;
+                    result += `❌ Failed: ${regNo} - ${res.message}\n`;
+                }
+            }
+
+            result += `\nSummary: Successfully imported ${imported} students, ${errors} errors\n`;
+            output.innerHTML = result;
+
+            document.getElementById('csvData').value = '';
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            updateMarksFields();
+
+            document.getElementById('numSubjects').addEventListener('change', function() {
+                const num = parseInt(this.value) || 3;
+                if (num >= 1 && num <= 10) {
+                    db.subjects = db.subjects.slice(0, num);
+                    while (db.subjects.length < num) {
+                        db.subjects.push(`Subject ${db.subjects.length + 1}`);
+                    }
+                    db.saveSubjects();
+                    updateMarksFields();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
